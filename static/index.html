@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BodyFat Estimator</title>
+  <meta name="description" content="Estimate body fat percentage from clinical measurements." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<header>
+  <div class="logo">BODY<span>FAT</span>.ML</div>
+  <span class="badge" id="accuracy-badge">Loading model…</span>
+</header>
+
+<main>
+  <div class="hero">
+    <p class="hero-eye">Linear Regression · 252 Clinical Samples</p>
+    <h1 class="hero-title">Body Fat<br/>Estimator</h1>
+    <p class="hero-sub">Enter all 14 measurements for an instant estimate. Hover any label for measurement instructions.</p>
+  </div>
+
+  <form id="predict-form" novalidate autocomplete="off">
+
+    <!-- 01 Physical Basics -->
+    <div class="form-section">
+      <div class="section-header">
+        <span class="s-num">01</span>
+        <span class="s-title">Physical Basics</span>
+        <div class="s-line"></div>
+      </div>
+      <div class="fields-grid">
+
+        <div class="field">
+          <label for="Density">
+            Density <em>g/cm³</em>
+            <span class="info-icon" data-tip="Measured via hydrostatic (underwater) weighing at a lab or sports performance facility. Requires full submersion.">?</span>
+          </label>
+          <input type="number" id="Density" name="Density" step="0.0001" min="0.950" max="1.120" required />
+          <span class="hint">0.95 – 1.12</span>
+          <span class="field-error" id="err-Density"></span>
+        </div>
+
+        <div class="field">
+          <label for="Age">
+            Age <em>yrs</em>
+            <span class="info-icon" data-tip="Your current age in whole years.">?</span>
+          </label>
+          <input type="number" id="Age" name="Age" step="1" min="18" max="100" required />
+          <span class="hint">18 – 100</span>
+          <span class="field-error" id="err-Age"></span>
+        </div>
+
+        <div class="field">
+          <label for="Weight">
+            Weight <em>lbs</em>
+            <span class="info-icon" data-tip="Weigh yourself in the morning before eating, wearing minimal clothing. Use a flat, hard surface for accuracy.">?</span>
+          </label>
+          <input type="number" id="Weight" name="Weight" step="0.01" min="80" max="420" required />
+          <span class="hint">80 – 420</span>
+          <span class="field-error" id="err-Weight"></span>
+        </div>
+
+        <div class="field">
+          <label for="Height">
+            Height <em>inches</em>
+            <span class="info-icon" data-tip="Stand straight against a wall without shoes. Measure from the floor to the top of your head.">?</span>
+          </label>
+          <input type="number" id="Height" name="Height" step="0.01" min="55" max="85" required />
+          <span class="hint">55 – 85</span>
+          <span class="field-error" id="err-Height"></span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 02 Upper Body -->
+    <div class="form-section">
+      <div class="section-header">
+        <span class="s-num">02</span>
+        <span class="s-title">Upper Body</span>
+        <div class="s-line"></div>
+      </div>
+      <div class="fields-grid">
+
+        <div class="field">
+          <label for="Neck">
+            Neck <em>cm</em>
+            <span class="info-icon" data-tip="Wrap the tape just below the larynx (Adam's apple) at the narrowest point of the neck. Keep tape horizontal.">?</span>
+          </label>
+          <input type="number" id="Neck" name="Neck" step="0.1" min="28" max="60" required />
+          <span class="hint">28 – 60</span>
+          <span class="field-error" id="err-Neck"></span>
+        </div>
+
+        <div class="field">
+          <label for="Chest">
+            Chest <em>cm</em>
+            <span class="info-icon" data-tip="Measure horizontally at nipple level, arms relaxed at sides, during a normal mid-breath. Do not flex.">?</span>
+          </label>
+          <input type="number" id="Chest" name="Chest" step="0.1" min="70" max="150" required />
+          <span class="hint">70 – 150</span>
+          <span class="field-error" id="err-Chest"></span>
+        </div>
+
+        <div class="field">
+          <label for="Biceps">
+            Biceps <em>cm</em>
+            <span class="info-icon" data-tip="Flex your arm to 90°. Measure around the peak of the bicep at the widest point. Keep the tape snug but not tight.">?</span>
+          </label>
+          <input type="number" id="Biceps" name="Biceps" step="0.1" min="22" max="50" required />
+          <span class="hint">22 – 50</span>
+          <span class="field-error" id="err-Biceps"></span>
+        </div>
+
+        <div class="field">
+          <label for="Forearm">
+            Forearm <em>cm</em>
+            <span class="info-icon" data-tip="Extend your arm, palm up. Measure around the widest part of the forearm, between the elbow and wrist.">?</span>
+          </label>
+          <input type="number" id="Forearm" name="Forearm" step="0.1" min="18" max="40" required />
+          <span class="hint">18 – 40</span>
+          <span class="field-error" id="err-Forearm"></span>
+        </div>
+
+        <div class="field">
+          <label for="Wrist">
+            Wrist <em>cm</em>
+            <span class="info-icon" data-tip="Measure at the wrist crease, just distal to the bony bump (styloid process). Arm relaxed, palm facing up.">?</span>
+          </label>
+          <input type="number" id="Wrist" name="Wrist" step="0.1" min="14" max="24" required />
+          <span class="hint">14 – 24</span>
+          <span class="field-error" id="err-Wrist"></span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 03 Core & Lower Body -->
+    <div class="form-section">
+      <div class="section-header">
+        <span class="s-num">03</span>
+        <span class="s-title">Core &amp; Lower Body</span>
+        <div class="s-line"></div>
+      </div>
+      <div class="fields-grid">
+
+        <div class="field">
+          <label for="Abdomen">
+            Abdomen <em>cm</em>
+            <span class="info-icon" data-tip="Measure horizontally at the navel. Stand relaxed — do not suck in. Tape should be snug but not compressing skin.">?</span>
+          </label>
+          <input type="number" id="Abdomen" name="Abdomen" step="0.1" min="60" max="160" required />
+          <span class="hint">60 – 160</span>
+          <span class="field-error" id="err-Abdomen"></span>
+        </div>
+
+        <div class="field">
+          <label for="Hip">
+            Hip <em>cm</em>
+            <span class="info-icon" data-tip="Stand with feet together. Measure around the widest point of your hips and buttocks. Keep tape parallel to the floor.">?</span>
+          </label>
+          <input type="number" id="Hip" name="Hip" step="0.1" min="75" max="160" required />
+          <span class="hint">75 – 160</span>
+          <span class="field-error" id="err-Hip"></span>
+        </div>
+
+        <div class="field">
+          <label for="Thigh">
+            Thigh <em>cm</em>
+            <span class="info-icon" data-tip="Stand with weight evenly distributed. Measure around the widest part of the upper thigh, just below the gluteal fold.">?</span>
+          </label>
+          <input type="number" id="Thigh" name="Thigh" step="0.1" min="40" max="100" required />
+          <span class="hint">40 – 100</span>
+          <span class="field-error" id="err-Thigh"></span>
+        </div>
+
+        <div class="field">
+          <label for="Knee">
+            Knee <em>cm</em>
+            <span class="info-icon" data-tip="Measure just above the kneecap (patella) with the leg straight and muscles relaxed.">?</span>
+          </label>
+          <input type="number" id="Knee" name="Knee" step="0.1" min="28" max="55" required />
+          <span class="hint">28 – 55</span>
+          <span class="field-error" id="err-Knee"></span>
+        </div>
+
+        <div class="field">
+          <label for="Ankle">
+            Ankle <em>cm</em>
+            <span class="info-icon" data-tip="Measure at the narrowest point just above the ankle bone (malleolus). Stand with weight evenly on both feet.">?</span>
+          </label>
+          <input type="number" id="Ankle" name="Ankle" step="0.1" min="16" max="38" required />
+          <span class="hint">16 – 38</span>
+          <span class="field-error" id="err-Ankle"></span>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" id="submit-btn">
+        <span id="btn-label">Estimate Body Fat</span>
+        <svg id="btn-spinner" class="spinner hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+          <path d="M12 2a10 10 0 0 1 10 10"/>
+        </svg>
+      </button>
+      <button type="button" id="reset-btn">Clear</button>
+    </div>
+
+  </form>
+
+  <!-- Result -->
+  <div id="result-card" class="result-card hidden" role="region" aria-live="polite">
+    <div class="result-top">
+      <div>
+        <p class="result-label">ESTIMATED BODY FAT</p>
+        <p class="result-value"><span id="result-pct">—</span><span class="pct-sym">%</span></p>
+      </div>
+      <span class="result-cat-pill" id="result-category">—</span>
+    </div>
+    <div class="bfp-track-wrap">
+      <div class="bfp-track">
+        <div class="bfp-needle" id="bfp-needle"></div>
+      </div>
+      <div class="bfp-zone-labels">
+        <span>Essential<br/><small>2–6%</small></span>
+        <span>Athletic<br/><small>6–14%</small></span>
+        <span>Fit<br/><small>14–18%</small></span>
+        <span>Average<br/><small>18–25%</small></span>
+        <span>Above<br/><small>25%+</small></span>
+      </div>
+    </div>
+    <p class="result-desc" id="result-desc"></p>
+  </div>
+
+</main>
+
+<script src="/static/main.js"></script>
+</body>
+</html>
